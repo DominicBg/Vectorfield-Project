@@ -1,5 +1,7 @@
 # Vectorfield-Project
 
+- Still in early developpement -
+
 A tool for Unity3D that generates Vectorfields.
 
 Currently 2 modes
