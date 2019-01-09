@@ -8,9 +8,10 @@ Currently 2 modes
 
 To use in the new VFX features using swarm behaviour
 
-![](vectorfield5.gif)
+![](Gifs/vectorfield5.gif)
+
 ## Draw in particle
 
 This will create a vectorfield with the shape of your drawing.
 
-![](sand draw.gif)
+![](Gifs/sanddraw2.gif)
