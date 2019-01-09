@@ -8,6 +8,7 @@ Currently 2 modes
 
 To use in the new VFX features using swarm behaviour
 
+![](vectorfield5.gif)
 ## Draw in particle
 
 This will create a vectorfield with the shape of your drawing.
