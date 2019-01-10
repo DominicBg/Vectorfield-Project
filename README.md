@@ -15,5 +15,5 @@ To use in the new VFX features using swarm behaviour
 ## Draw in particle
 
 This will create a vectorfield with the shape of your drawing.
-
+![](Gifs/Draw.gif)
 ![](Gifs/sanddraw2.gif)
