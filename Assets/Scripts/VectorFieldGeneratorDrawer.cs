@@ -7,10 +7,14 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
     List<Vector3> positions = new List<Vector3>();
     List<Vector3> screenPositions = new List<Vector3>();
 
+    [SerializeField] Vector2Int sizes;
     [SerializeField] bool isRecording;
 
     [SerializeField] float delay = 0.1f;
-    [SerializeField] float depth = 5;
+    [SerializeField] float fallSpeed = 0.01f;
+    [SerializeField] float vectorPropagationRate = 0.1f;
+    [SerializeField] int propagationSize = 1;
+    float depth = 5;
     float currentTime = 0;
     Camera mainCamera;
 
@@ -33,7 +37,7 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
 
         if (Input.GetMouseButton(1))
         {
-            vectorfield = GenerateVectorField(size);
+            vectorfield = GenerateVectorField();
             RenderTo3DTexture(vectorfield);
 
         }
@@ -64,48 +68,82 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
         }
     }
 
-    protected override Vector3[,,] GenerateVectorField(int size)
+    protected override Vector3[,,] GenerateVectorField()
     {
-        Vector3[,,] vectorfield = new Vector3[size, size, size];
+        Vector3[,,] vectorfield = new Vector3[sizes.x, sizes.y, 1];
 
-        Vector3 middle = Vector3.one * size * 0.5f;
-        for (int x = 0; x < size; x++)
+        Vector3[] directions = CalculateDirections();
+        Vector3Int[] discretePositions = CalculateDiscretizedPositions();
+
+        Vector3 middle = new Vector3(sizes.x * 0.5f, sizes.y * 0.5f, 0);
+
+        InitializeField(vectorfield);
+
+        CalculateVectorfield(vectorfield, directions, discretePositions);
+
+        AffectSurrounding(vectorfield, directions, discretePositions);
+
+        return vectorfield;
+    }
+
+    private void InitializeField(Vector3[,,] vectorfield)
+    {
+        for (int x = 0; x < sizes.x; x++)
         {
-            for (int y = 0; y < size; y++)
+            for (int y = 0; y < sizes.y; y++)
             {
-                for (int z = 0; z < size; z++)
-                {
-                    vectorfield[x, y, z] = Vector3.down * 0.02f;// (middle - new Vector3(x, y, z)).SetZ(0) / size;
-                }
+                vectorfield[x, y, 0] = Vector3.down * fallSpeed;// (middle - new Vector3(x, y, z)).SetZ(0) / size;
             }
         }
+    }
 
-        for (int i = 0; i < screenPositions.Count-1; i++)
+    private Vector3[] CalculateDirections()
+    {
+        int length = screenPositions.Count - 1;
+        Vector3[] directions = new Vector3[length];
+        for (int i = 0; i < length; i++)
         {
-            Vector3 direction = (screenPositions[i + 1] - screenPositions[i]).normalized;
+            directions[i] = (screenPositions[i + 1] - screenPositions[i]).normalized;
+        }
+        return directions;
+    }
 
-            //Discretize value
+    private Vector3Int[] CalculateDiscretizedPositions()
+    {
+        int length = screenPositions.Count - 1;
+        Vector3Int[] discretePositions = new Vector3Int[length];
+        for (int i = 0; i < length; i++)
+        {
             float screenRatio = (float)Screen.height / Screen.width;
-            int x = (int)(screenPositions[i].x / Screen.width * size);
-            int y = (int)(screenPositions[i].y / Screen.height * size * screenRatio);
-
-            vectorfield[x, y, 0] = direction;
-
+            int x = (int)(screenPositions[i].x / Screen.width * sizes.x);
+            int y = (int)(screenPositions[i].y / Screen.height * sizes.y * screenRatio);
+            discretePositions[i] = new Vector3Int(x, y, 0);
         }
+        return discretePositions;
+    }
 
-        for (int x = 0; x < size; x++)
+    private static void CalculateVectorfield(Vector3[,,] vectorfield, Vector3[] directions, Vector3Int[] discretePositions)
+    {
+        for (int i = 0; i < directions.Length; i++)
         {
-            for (int y = 0; y < size; y++)
-            {
-                for (int z = 0; z < size; z++)
-                    vectorfield[x, y, z] = vectorfield[x, y, 0];
-            }
+            int x = discretePositions[i].x;
+            int y = discretePositions[i].y;
+
+            vectorfield[x, y, 0] = directions[i];
         }
-            /*
-            //affect surrounding
-            for (int j = -1; j <= 1; j++)
+    }
+
+    private void AffectSurrounding(Vector3[,,] vectorfield, Vector3[] directions, Vector3Int[] discretePositions)
+    {
+        for (int i = 0; i < directions.Length; i++)
+        {
+            int x = discretePositions[i].x;
+            int y = discretePositions[i].y;
+            Vector3 direction = directions[i];
+
+            for (int j = -propagationSize; j <= propagationSize; j++)
             {
-                for (int k = -1; k <= 1; k++)
+                for (int k = -propagationSize; k <= propagationSize; k++)
                 {
                     if (j == k)
                         continue;
@@ -113,13 +151,13 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
                     int xx = x + j;
                     int yy = y + k;
                     //In bound
-                    if (xx >= 0 && xx < size && yy >= 0 && yy < size)
+                    if (xx >= 0 && xx < sizes.x && yy >= 0 && yy < sizes.y)
                     {
-                        vectorfield[xx, yy, 0] += direction * 0.1f;
+                        vectorfield[xx, yy, 0] += direction * vectorPropagationRate;
                     }
                 }
-            }*/
-        return vectorfield;
+            }
+        }
     }
 
     bool IsReadyToTakeFrame()

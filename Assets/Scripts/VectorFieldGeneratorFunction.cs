@@ -5,11 +5,13 @@ using UnityEngine;
 public class VectorFieldGeneratorFunction : VectorFieldGeneratorBase
 {
     [SerializeField] VectorFunction function;
+    [SerializeField] int size;
     private void OnValidate()
     {
         UpdateVectorField();
     }
-    protected override Vector3[,,] GenerateVectorField(int size)
+
+    protected override Vector3[,,] GenerateVectorField()
     {
         Vector3[,,] vectorField = new Vector3[size, size, size];
         Vector3 middle = size * Vector3.one * 0.5f;

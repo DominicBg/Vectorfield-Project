@@ -29,10 +29,10 @@ MonoBehaviour:
   categories: []
   uiBounds:
     serializedVersion: 2
-    x: 777
+    x: 0
     y: -347
-    width: 748
-    height: 1952
+    width: 1508
+    height: 1927
 --- !u!114 &114350483966674976
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -676,15 +676,15 @@ VisualEffectResource:
         - m_ExpressionIndex: 22
           m_Value: 0
         - m_ExpressionIndex: 23
-          m_Value: 2500
+          m_Value: 250000
         - m_ExpressionIndex: 28
           m_Value: 0.03
         - m_ExpressionIndex: 29
           m_Value: 1
         - m_ExpressionIndex: 32
-          m_Value: 3
+          m_Value: 10
         - m_ExpressionIndex: 33
-          m_Value: 2
+          m_Value: 5
         - m_ExpressionIndex: 34
           m_Value: 1
       m_Vector2f:
@@ -1109,7 +1109,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 2500
+      m_SerializableObject: 250000
     m_Space: 2147483647
   m_Property:
     name: Rate
@@ -1555,7 +1555,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 2
+      m_SerializableObject: 5
     m_Space: 2147483647
   m_Property:
     name: Min
@@ -1589,7 +1589,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 3
+      m_SerializableObject: 10
     m_Space: 2147483647
   m_Property:
     name: Max

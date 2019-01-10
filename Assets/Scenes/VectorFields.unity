@@ -160,7 +160,7 @@ MonoBehaviour:
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
   y: -1
-  rotateAmmmount: 794.1
+  rotateAmmmount: 622.8
   distance: 0
 --- !u!114 &131202595
 MonoBehaviour:
@@ -174,15 +174,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e588c63469487647bcc61352c4c08d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: 13
   name: Stuff
   debugLogs: 0
   drawGizmos: 1
-  scale: 5
+  scale: 15
   rescaleVFX: 1
   optimizeRenderIndex: 3
   visualEffect: {fileID: 1418766752}
+  wrapMode: 1
   function: {fileID: 131202597}
+  size: 13
 --- !u!4 &131202596
 Transform:
   m_ObjectHideFlags: 0
@@ -225,9 +226,9 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  rotateX: 35
-  rotateY: 135
-  rotateZ: 35
+  rotateX: 0
+  rotateY: 5
+  rotateZ: 5
 --- !u!1 &680358014
 GameObject:
   m_ObjectHideFlags: 0
@@ -419,7 +420,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc0a23fabbd34cd48be23af424f25446, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: 8
   name: Dra
   debugLogs: 0
   drawGizmos: 0
@@ -427,9 +427,13 @@ MonoBehaviour:
   rescaleVFX: 0
   optimizeRenderIndex: 0
   visualEffect: {fileID: 1418766752}
+  wrapMode: 0
+  sizes: {x: 128, y: 128}
   isRecording: 1
   delay: 0.01
-  depth: 5
+  fallSpeed: 0.01
+  vectorPropagationRate: 0.1
+  propagationSize: 1
 --- !u!4 &957561563
 Transform:
   m_ObjectHideFlags: 0
@@ -520,10 +524,10 @@ VisualEffect:
       m_Array: []
     m_Vector3f:
       m_Array:
-      - m_Value: {x: 5, y: 5, z: 5}
+      - m_Value: {x: 15, y: 15, z: 15}
         m_Name: Size
         m_Overridden: 1
-      - m_Value: {x: 5, y: 5, z: 5}
+      - m_Value: {x: 15, y: 15, z: 15}
         m_Name: Spawn Size
         m_Overridden: 1
     m_Vector4f:

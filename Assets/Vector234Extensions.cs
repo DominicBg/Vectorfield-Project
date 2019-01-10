@@ -3,8 +3,19 @@ using UnityEngine;
 
 public static class Vector234Extensions
 {
-	// Vector2
-	public static Vector2 SetX(this Vector2 aVec, float aXValue)
+
+    public static Vector3 ElementWiseDivision(this Vector3 v1, Vector3Int v2)
+    {
+        return ElementWiseDivision(v1, (Vector3)v2);
+    }
+
+    public static Vector3 ElementWiseDivision(this Vector3 v1, Vector3 v2)
+    {
+        return new Vector3(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z);
+    }
+
+    // Vector2
+    public static Vector2 SetX(this Vector2 aVec, float aXValue)
 	{
 		aVec.x = aXValue;
 		return aVec;

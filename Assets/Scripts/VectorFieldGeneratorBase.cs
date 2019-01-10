@@ -5,8 +5,8 @@ using UnityEngine.Experimental.VFX;
 
 public abstract class VectorFieldGeneratorBase : MonoBehaviour
 {
-   // [SerializeField] VectorFunction function;
-    [SerializeField] protected int size = 12;
+    // [SerializeField] VectorFunction function;
+    //[SerializeField] protected int size = 12;
     [SerializeField] string name;
     [SerializeField] bool debugLogs;
     [SerializeField] bool drawGizmos;
@@ -20,13 +20,13 @@ public abstract class VectorFieldGeneratorBase : MonoBehaviour
 
     public void UpdateVectorField()
     {
-        vectorfield = GenerateVectorField(size);
+        vectorfield = GenerateVectorField();
         RenderTo3DTexture(vectorfield);
     }
 
     private void OnDrawGizmos()
     {
-        if(vectorfield != null && drawGizmos)
+        if (vectorfield != null && drawGizmos)
             ShowVectorField(vectorfield);
     }
 
@@ -36,7 +36,7 @@ public abstract class VectorFieldGeneratorBase : MonoBehaviour
     public void RenderTo3DTexture(Vector3[,,] vectorfield)
     {
         //vectorfield = GenerateVectorField(size);
-        Texture3D texture = ConvertVectorFieldToTexture3D(vectorfield, size);
+        Texture3D texture = ConvertVectorFieldToTexture3D(vectorfield);
 
         texture.wrapMode = wrapMode;
 
@@ -44,84 +44,120 @@ public abstract class VectorFieldGeneratorBase : MonoBehaviour
         UnityEditor.AssetDatabase.CreateAsset(texture, "Assets/" + name + ".asset");
 #endif
 
-    
-        if (rescaleVFX) { 
+        if (rescaleVFX) {
             visualEffect.SetVector3("Size", Vector3.one * scale);
             visualEffect.SetVector3("Spawn Size", Vector3.one * scale);
         }
         visualEffect.SetTexture("VectorField", texture);
     }
 
-    protected abstract Vector3[,,] GenerateVectorField(int size);
+    protected abstract Vector3[,,] GenerateVectorField();
 
-    public void ShowVectorField(Vector3[,,] vectorField)
+    public void ShowVectorField(Vector3[,,] vectorfield)
     {
-        Vector3 middle = Vector3.one * size * 0.5f;
-        for (int x = 0; x < size; x++)
+        Vector3Int sizes = GetSizesVectorField(vectorfield);
+        Vector3 middle = (Vector3)sizes * 0.5f;//Vector3.one * size * 0.5f;
+        for (int x = 0; x < sizes.x; x++)
         {
-            for (int y = 0; y < size; y++)
+            for (int y = 0; y < sizes.y; y++)
             {
-                for (int z = 0; z < size; z++)
+                for (int z = 0; z < sizes.z; z++)
                 {
-                    
-                    if (ShouldSkipIndex(x,y,z,size))
+                    if (ShouldSkipIndex(x, y, z, sizes))
                         continue;
 
-                    if (vectorField[x, y, z] == Vector3.zero)
+                    if (vectorfield[x, y, z] == Vector3.zero)
                         continue;
+
 
                     Vector3 start = new Vector3(x, y, z) - middle;
-                    Vector3 end = new Vector3(x, y, z) + vectorField[x, y, z] - middle;
-                    Color color = new Color((float)x / size, (float)y / size, (float)z / size);
+                    Vector3 end = new Vector3(x, y, z) + vectorfield[x, y, z] - middle;
+                    Color color = new Color((float)x / sizes.x, (float)y / sizes.y, (float)z / sizes.z);
                     Gizmos.color = color;
-                    Gizmos.DrawLine(start * scale / size, end * scale / size);
-                    Gizmos.DrawSphere(end * scale / size, .1f * scale / size);
+                    Gizmos.DrawLine(
+                        (start * scale).ElementWiseDivision(sizes),
+                        (end * scale).ElementWiseDivision(sizes));
+
+                    Gizmos.DrawSphere(
+                        (end * scale).ElementWiseDivision(sizes),
+                        (.1f * scale) / ((Vector3)sizes).magnitude);
                 }
             }
         }
     }
 
-    Texture3D ConvertVectorFieldToTexture3D(Vector3[,,] vectorField, int size)
+    Texture3D ConvertVectorFieldToTexture3D(Vector3[,,] vectorField) //, int size)
     {
-        Color[] colorArray = new Color[size * size * size];
-        Texture3D texture = new Texture3D(size, size, size, TextureFormat.RGBA32, true);
+        //test remove size;
+        Vector3Int sizes = GetSizesVectorField(vectorField);
+        //Color[] colorArray = new Color[size * size * size];
+        //Texture3D texture = new Texture3D(size, size, size, TextureFormat.RGBA32, true);
 
-        for (int x = 0; x < size; x++)
+        //for (int x = 0; x < size; x++)
+        //{
+        //    for (int y = 0; y < size; y++)
+        //    {
+        //        for (int z = 0; z < size; z++)
+        //        {
+        //            Color c = Vector3ToColor(vectorField[x, y, z]);
+        //            colorArray[GetIndex(x, y, z, size)] = c;
+        //        }
+        //    }
+        //}
+        Color[] colorArray = new Color[sizes.x * sizes.y * sizes.z];
+        Texture3D texture = new Texture3D(sizes.x, sizes.y, sizes.z, TextureFormat.RGBA32, true);
+
+       
+            
+    for (int z = 0; z < sizes.z; z++)
+    {
+        for (int y = 0; y < sizes.y; y++)
         {
-            for (int y = 0; y < size; y++)
+            for (int x = 0; x < sizes.x; x++)
             {
-                for (int z = 0; z < size; z++)
-                {
-                    //if -1 = 0,  if 0 = .5 , if 1 = 1
-                    // -1 + 1 / 2 = 0,  0+1 / 2 0.5
-                    Vector3 v = vectorField[x, y, z];
-                    Vector3 vv = (v + Vector3.one) * 0.5f;
-                    Color c = new Color(vv.x, vv.y, vv.z, 1);
-
-                    if (debugLogs)
-                    { 
-                        Debug.Log(v);
-                        Debug.Log(vv);
-                        Debug.Log(c);
-                        Debug.Log("---");
-                    }
-                    colorArray[GetIndex(x, y, z, size)] = c;
-                }
+                Color c = Vector3ToColor(vectorField[x, y, z]);
+                int i = GetIndex(x, y, z, sizes);
+                if(debugLogs)
+                    Debug.Log(x + " , " + y + " , " + z + ", i " + i);
+                colorArray[i] = c;
             }
         }
+    }
+
         texture.SetPixels(colorArray);
         texture.Apply();
         return texture;
     }
 
-    bool ShouldSkipIndex(int x, int y, int z, int size)
+    Vector3Int GetSizesVectorField(Vector3[,,] vectorfield)
     {
-        int skipIndex = GetIndex(x, y, z, size);
+        int sizeX = vectorfield.GetLength(0);
+        int sizeY = vectorfield.GetLength(1);
+        int sizeZ = vectorfield.GetLength(2);
+        return new Vector3Int(sizeX, sizeY, sizeZ);
+    }
+
+    Color Vector3ToColor(Vector3 v)
+    {
+        //if -1 = 0,  if 0 = .5 , if 1 = 1
+        // -1 + 1 / 2 = 0,  0+1 / 2 0.5
+        Vector3 vv = (v + Vector3.one) * 0.5f;
+        return new Color(vv.x, vv.y, vv.z, 1);
+    }
+
+    bool ShouldSkipIndex(int x, int y, int z, Vector3Int sizes)
+    {
+        int skipIndex = GetIndex(x, y, z, sizes);
         return (optimizeRenderIndex != 0 && skipIndex % (1 << optimizeRenderIndex) != 0);
     }
 
     int GetIndex(int x, int y, int z, int size)
     {
         return x + (y * size) + (z * size * size);
+    }
+
+    int GetIndex(int x, int y, int z, Vector3Int sizes)
+    {
+        return x + (y * sizes.x) + (z * sizes.x * sizes.y);
     }
 }
