@@ -124,6 +124,7 @@ GameObject:
   - component: {fileID: 131202595}
   - component: {fileID: 131202594}
   - component: {fileID: 131202597}
+  - component: {fileID: 131202598}
   m_Layer: 0
   m_Name: Generator
   m_TagString: Untagged
@@ -182,8 +183,8 @@ MonoBehaviour:
   optimizeRenderIndex: 3
   visualEffect: {fileID: 1418766752}
   wrapMode: 1
-  function: {fileID: 131202597}
-  size: 13
+  function: {fileID: 131202598}
+  size: 12
 --- !u!4 &131202596
 Transform:
   m_ObjectHideFlags: 0
@@ -229,6 +230,35 @@ MonoBehaviour:
   rotateX: 0
   rotateY: 5
   rotateZ: 5
+--- !u!114 &131202598
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 131202593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5edb536cb6c1f6541a3305071fd53985, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnValueChanged:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 131202595}
+        m_MethodName: UpdateVectorField
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  scale: 0.33
 --- !u!1 &680358014
 GameObject:
   m_ObjectHideFlags: 0
