@@ -25,6 +25,6 @@ This will create a vectorfield with the shape of your drawing.
 Demo in 
 Assets/Scenes/VectorFieldDrawer
 
-![](Gifs/Drawingv2.gif.gif)
+![](Gifs/Drawingv2.gif)
 
 This feature receives positions in parameters, so it could be the player mouvement or the cursor etc.
