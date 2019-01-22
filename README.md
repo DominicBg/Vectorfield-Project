@@ -11,6 +11,7 @@
 To use in the new VFX features using swarm behaviour
 
 ![](Gifs/vectorfield5.gif)
+![](Gifs/Vectorfield.gif)
 
 ## Draw in particle
 
