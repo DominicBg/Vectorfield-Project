@@ -460,7 +460,7 @@ VisualEffect:
       m_Array: []
     m_NamedObject:
       m_Array:
-      - m_Value: {fileID: 11700000, guid: 5946af69d72ca7c40804856b2fdd1c04, type: 2}
+      - m_Value: {fileID: 11700000, guid: 8f5674cba9629ac44a39bc09f0295a73, type: 2}
         m_Name: VectorField
         m_Overridden: 1
     m_Bool:
@@ -674,7 +674,7 @@ GameObject:
   - component: {fileID: 2025201508}
   - component: {fileID: 2025201510}
   m_Layer: 0
-  m_Name: Drawer
+  m_Name: PlaneDrawer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -692,19 +692,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc0a23fabbd34cd48be23af424f25446, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  name: Drawing
+  savingName: PlaneDrawer
   debugLogs: 0
   drawGizmos: 1
-  rescaleVFX: 0
   optimizeRenderIndex: 0
+  rescaleVFX: 0
   scale: {x: 10, y: 0.1, z: 10}
   visualEffect: {fileID: 918062621}
   wrapMode: 1
-  sizes: {x: 10, y: 10}
-  isRecording: 1
-  vectorPropagationRate: 0.1
+  gridResolution: {x: 10, y: 10}
   propagationSize: 0
-  invertYZ: 1
+  vectorPropagationRate: 0.1
   maxMagnitude: 0.5
   surfaceBoxCollider: {fileID: 347177239}
 --- !u!4 &2025201509

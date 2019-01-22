@@ -5,18 +5,22 @@ using UnityEngine.Experimental.VFX;
 
 public abstract class VectorFieldGeneratorBase : MonoBehaviour
 {
-    // [SerializeField] VectorFunction function;
-    //[SerializeField] protected int size = 12;
-    [SerializeField] string name;
+    [Header("Editor param")]
+    [SerializeField] string savingName = "Vectorfield";
     [SerializeField] bool debugLogs;
     [SerializeField] bool drawGizmos;
-    [SerializeField] bool rescaleVFX;
     [SerializeField] int optimizeRenderIndex;
-    [SerializeField] protected Vector3 scale;
+
+    [Header("General params")]
+    [SerializeField] bool rescaleVFX;
+    [SerializeField] protected Vector3 scale = Vector3.one * 10;
+
+    [Header("Visual effects")]
     [SerializeField] protected VisualEffect visualEffect;
     [SerializeField] TextureWrapMode wrapMode;
+
     protected Vector3[,,] vectorfield;
-    Texture3D currentTexture;
+    protected Texture3D currentTexture;
 
     public void UpdateVectorField()
     {
@@ -30,8 +34,6 @@ public abstract class VectorFieldGeneratorBase : MonoBehaviour
             ShowVectorField(vectorfield);
     }
 
-    //Faire un texture3D updater
-
     [ContextMenu("Render To 3D Texture")]
     public void RenderTo3DTexture(Vector3[,,] vectorfield)
     {
@@ -41,7 +43,7 @@ public abstract class VectorFieldGeneratorBase : MonoBehaviour
 
 #if UNITY_EDITOR
         if(currentTexture == null)
-        UnityEditor.AssetDatabase.CreateAsset(texture, "Assets/" + name + ".asset");
+        UnityEditor.AssetDatabase.CreateAsset(texture, "Assets/" + savingName + ".asset");
 #endif
         currentTexture = texture;
 

@@ -4,21 +4,22 @@ using UnityEngine;
 
 public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
 {
-    List<Vector3> positions = new List<Vector3>();
-    List<Vector3Int> discretizedPositions = new List<Vector3Int>();
+    [SerializeField] Vector2Int gridResolution = new Vector2Int(10,10);
 
-    [SerializeField] Vector2Int sizes;
-    [SerializeField] bool isRecording;
-
+    [Header("Options")]
+    //number of grid around the selected that will be affected
+    [SerializeField] int propagationSize = 0;
+    //Each surrounding grid will be affected by how much (ratio 0,1)
     [SerializeField] float vectorPropagationRate = 0.1f;
-    [SerializeField] int propagationSize = 1;
-    [SerializeField] bool invertYZ;
-  
+    //Max magnitude of each vector
     [SerializeField] float maxMagnitude = 2;
+
+    [Header("Insert the surface here")]
     [SerializeField] BoxCollider surfaceBoxCollider;
 
     Vector3 centerPosition;
-
+    List<Vector3> positions = new List<Vector3>();
+    List<Vector3Int> discretizedPositions = new List<Vector3Int>();
 
     private void OnValidate()
     {
@@ -29,11 +30,8 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
     {
         centerPosition = surfaceBoxCollider.transform.position;
 
-        Vector3 realScale = new Vector3(
-            surfaceBoxCollider.size.x * surfaceBoxCollider.transform.localScale.x,
-            surfaceBoxCollider.size.y * surfaceBoxCollider.transform.localScale.y,
-            surfaceBoxCollider.size.z * surfaceBoxCollider.transform.localScale.z
-            );
+        Vector3 realScale = surfaceBoxCollider.size.ElementWiseMultiplication(surfaceBoxCollider.transform.localScale);
+
         scale = realScale;
         visualEffect.SetVector3("Size", realScale);
         visualEffect.SetVector3("Spawn Size", realScale);
@@ -67,13 +65,13 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
     public bool InBound(Vector3Int discretizedPosition)
     {
         return
-            discretizedPosition.x >= 0 && discretizedPosition.x < sizes.x &&
-            discretizedPosition.z >= 0 && discretizedPosition.z < sizes.y;
+            discretizedPosition.x >= 0 && discretizedPosition.x < gridResolution.x &&
+            discretizedPosition.z >= 0 && discretizedPosition.z < gridResolution.y;
     }
 
     public Vector3Int CalculateDiscretizedPosition(Vector3 position)
     {
-        Vector3 sizeV3 = new Vector3(sizes.x, 0, sizes.y);
+        Vector3 sizeV3 = new Vector3(gridResolution.x, 0, gridResolution.y);
         
         //Take diff * scale / size and normalize it
         Vector3 scaledDiff = (position - centerPosition)
@@ -92,9 +90,9 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
 
     public void ReduceVector(float ratio)
     {
-        for (int x = 0; x < sizes.x; x++)
+        for (int x = 0; x < gridResolution.x; x++)
         {
-            for (int z = 0; z < sizes.y; z++)
+            for (int z = 0; z < gridResolution.y; z++)
             {
                 if (vectorfield[x, 0, z] == Vector3.zero)
                     continue;
@@ -117,7 +115,7 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
     {
         if (vectorfield == null)
         {
-            vectorfield = InitializeField();
+            vectorfield = new Vector3[gridResolution.x, 1, gridResolution.y];
             InitializeField(vectorfield);
             return vectorfield;
         }
@@ -125,7 +123,7 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
         Vector3[] directions = CalculateDirections();
         Vector3Int[] discretePositions = discretizedPositions.ToArray();
 
-        Vector3 middle = GetNewVector3(sizes.x * 0.5f, sizes.y * 0.5f);
+        Vector3 middle = new Vector3(gridResolution.x * 0.5f, 0, gridResolution.y * 0.5f);
 
         CalculateVectorfield(vectorfield, directions, discretePositions);
         AffectSurrounding(vectorfield, directions, discretePositions);
@@ -133,40 +131,13 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
         return vectorfield;
     }
 
-    Vector3[,,] InitializeField()
-    {
-        return (invertYZ) ? new Vector3[sizes.x, 1, sizes.y] : new Vector3[sizes.x, sizes.y, 1];
-    }
-
-    Vector3 GetNewVector3(float x, float y)
-    {
-        return (invertYZ) ? new Vector3(x, 0, y) : new Vector3(x, y, 0);
-    }
-
-    void InsertInVectorfield(Vector3[,,] vectorfield, int x, int y, Vector3 v)
-    {
-        if (invertYZ)
-            vectorfield[x, 0, y] = v;
-        else
-            vectorfield[x, y, 0] = v;
-    }
-
-    void AdditionToVectorfield(Vector3[,,] vectorfield, int x, int y, Vector3 v)
-    {
-        if (invertYZ)
-            vectorfield[x, 0, y] += v;
-
-        else
-            vectorfield[x, y, 0] += v;
-    }
-
     private void InitializeField(Vector3[,,] vectorfield)
     {
-        for (int x = 0; x < sizes.x; x++)
+        for (int x = 0; x < gridResolution.x; x++)
         {
-            for (int y = 0; y < sizes.y; y++)
+            for (int y = 0; y < gridResolution.y; y++)
             {
-                InsertInVectorfield(vectorfield, x, y, Vector3.zero);
+                vectorfield[x, 0, y] = Vector3.zero;
             }
         }
     }
@@ -190,19 +161,23 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
             {
                 directions[i] = directions[i].SetY(0);
             }
-            Debug.Log(discretePositions[i]);
-            vectorfield[discretePositions[i].x, 0, discretePositions[i].z] = directions[i];
+
+            int x = discretePositions[i].x;
+            int z = discretePositions[i].z;
+            vectorfield[x, 0, z] = directions[i];
         }
     }
 
     private void AffectSurrounding(Vector3[,,] vectorfield, Vector3[] directions, Vector3Int[] discretePositions)
     {
+        //Pour chaque direction
         for (int i = 0; i < directions.Length; i++)
         {
             int x = discretePositions[i].x;
             int y = discretePositions[i].z;
             Vector3 direction = directions[i];
 
+            //calculer les surroundings 
             for (int j = -propagationSize; j <= propagationSize; j++)
             {
                 for (int k = -propagationSize; k <= propagationSize; k++)
@@ -213,7 +188,7 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
                     int xx = x + j;
                     int yy = y + k;
                     //In bound
-                    if (xx >= 0 && xx < sizes.x && yy >= 0 && yy < sizes.y)
+                    if (xx >= 0 && xx < gridResolution.x && yy >= 0 && yy < gridResolution.y)
                     {
                         float diff = Mathf.Abs(j) + Mathf.Abs(k);
                         vectorfield[xx, 0, yy] += direction * (vectorPropagationRate / diff);
