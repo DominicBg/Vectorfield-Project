@@ -14,12 +14,20 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
     //Max magnitude of each vector
     [SerializeField] float maxMagnitude = 2;
 
+    [SerializeField] float decayFactor;
+
     [Header("Insert the surface here")]
     [SerializeField] BoxCollider surfaceBoxCollider;
 
     Vector3 centerPosition;
     List<Vector3> positions = new List<Vector3>();
     List<Vector3Int> discretizedPositions = new List<Vector3Int>();
+
+    private void Update()
+    {
+        //Maybe mettre un check si y'a encore des vector plus grand que 0
+        ReduceVector(Time.deltaTime * decayFactor);
+    }
 
     private void OnValidate()
     {
@@ -46,6 +54,7 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
             Vector3Int discretPosition = CalculateDiscretizedPosition(positions[i]);
             discretizedPositions.Add(discretPosition);
         }
+        CalculateVectorField();
     }
 
     public void CalculateVectorField()
@@ -60,6 +69,12 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
         positions.Clear();
         discretizedPositions.Clear();
         CalculateVectorField();
+    }
+
+    public bool InBound(Vector3 position)
+    {
+        Vector3Int discretPosition = CalculateDiscretizedPosition(position);
+        return InBound(discretPosition);
     }
 
     public bool InBound(Vector3Int discretizedPosition)

@@ -16,6 +16,6 @@ public class InwardVectorFunction : VectorFunction
         float r = Mathf.Lerp(0, rotateAmmmount, t);
 
         Vector3 newV = point.SetY(y);
-        return GameMath.RotateVectorY(r, newV);
+        return newV.RotateVectorY(r);
     }
 }

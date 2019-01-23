@@ -9,7 +9,7 @@ public class PerlinVectorField : VectorFunction
     {
         float perlinValue = Perlin3D(point * scale);
         float fullCirclevalue = perlinValue * 360;
-        return GameMath.RotateVectorX(fullCirclevalue, point);
+        return point.RotateVectorX(fullCirclevalue);
     }
 
     float Perlin3D(Vector3 point)

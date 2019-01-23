@@ -33,7 +33,6 @@ public class ExempleDrawer : MonoBehaviour
         {
             ReleaseDraw();
         }
-        drawer.ReduceVector(Time.deltaTime * decaySpeed);
 
         if(Input.GetKeyDown(KeyCode.Space))
             positions.Clear();
@@ -53,7 +52,6 @@ public class ExempleDrawer : MonoBehaviour
     void ReleaseDraw()
     {
         drawer.DrawPositions(positions);
-        drawer.CalculateVectorField();
         positions.Clear();
     }
 

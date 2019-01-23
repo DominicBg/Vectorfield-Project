@@ -15,13 +15,13 @@ public class RotationFunction : VectorFunction
 
         Vector3 newV = point;
         if(rotateX != 0)
-            newV = GameMath.RotateVectorX(rotateX, newV);
+            newV = newV.RotateVectorX(rotateX);
 
         if (rotateY != 0)
-            newV = GameMath.RotateVectorY(rotateY, newV);
+            newV = newV.RotateVectorY(rotateY);
 
         if (rotateZ != 0)
-            newV = GameMath.RotateVectorZ(rotateZ, newV);
+            newV = newV.RotateVectorZ(rotateZ);
 
         return newV;
     }
