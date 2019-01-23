@@ -13,7 +13,6 @@ public class ExempleDrawer : MonoBehaviour
     [SerializeField] float rayDistance = 55;
     [SerializeField] LayerMask layerMaskFloor;
     [SerializeField] VectorFieldGeneratorDrawer drawer;
-    [SerializeField] float decaySpeed;
     List<Vector3> positions = new List<Vector3>();
 
     void Awake()

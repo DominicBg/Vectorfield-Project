@@ -20,13 +20,33 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
     [SerializeField] BoxCollider surfaceBoxCollider;
 
     Vector3 centerPosition;
-    List<Vector3> positions = new List<Vector3>();
-    List<Vector3Int> discretizedPositions = new List<Vector3Int>();
+
+    Dictionary<Vector3Int, Vector3> positionDictionary = new Dictionary<Vector3Int, Vector3>();
+    bool hasChanged = false;
+
+
+    /// <summary>
+    /// Logique de l'algo
+    /// Si on veut draw des trucs, on rajoute tout dans un Dictionary
+    /// Avec comme key la position normalizé et discretisé (x,y,z) pour accédé au vectorfield[,,]
+    /// Et la value est le vecteur à la position (x,y,z)
+    /// 
+    /// Dans l'update on réduit le vecteur à chaque case dans le dictionary, pour évité de calculé sur tous les cases de la grilles
+    /// Si une case a un vecteur avec une magnitude proche de 0, on le remove du dictionary
+    /// </summary>
+
 
     private void Update()
     {
-        //Maybe mettre un check si y'a encore des vector plus grand que 0
-        ReduceVector(Time.deltaTime * decayFactor);
+        if (hasChanged)
+        {
+            CalculateVectorField();
+            hasChanged = false;
+        }
+        if (positionDictionary.Count != 0)
+        { 
+            ReduceVectorOptimized(decayFactor);
+        }
     }
 
     private void OnValidate()
@@ -47,27 +67,23 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
 
     public void DrawPositions(List<Vector3> positions)
     {
-        discretizedPositions.Clear();
-        this.positions = positions;
-        for (int i = 0; i < positions.Count; i++)
-        {
-            Vector3Int discretPosition = CalculateDiscretizedPosition(positions[i]);
-            discretizedPositions.Add(discretPosition);
-        }
-        CalculateVectorField();
+        AddPositionsInDictionary(positions, positionDictionary);
     }
 
     public void CalculateVectorField()
     {
         vectorfield = GenerateVectorField();
-        RenderTo3DTexture(vectorfield);
+
+        if (currentTexture == null)
+            RenderTo3DTexture(vectorfield);
+        else
+            AffectTexture3DWithPositionDictionary(currentTexture, positionDictionary, vectorfield);
     }
 
     public void ResetField()
     {
         vectorfield = null;
-        positions.Clear();
-        discretizedPositions.Clear();
+        positionDictionary.Clear();
         CalculateVectorField();
     }
 
@@ -98,34 +114,58 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
         return new Vector3Int((int)normalizedPoint.x, 0, (int)normalizedPoint.z);
     }
 
-    public void AddVectorAtPosition(Vector3Int position, Vector3 force)
+    public void AddVectorAtPosition(Vector3Int discretePosition, Vector3 vector)
     {
-        vectorfield[position.x, position.y, position.z] += force;
+        AddInDictionary(positionDictionary, discretePosition, vector);
+        vectorfield[discretePosition.x, discretePosition.y, discretePosition.z] += vector;
     }
 
-    public void ReduceVector(float ratio)
+    void ReduceVectorOptimized(float ratio)
     {
-        for (int x = 0; x < gridResolution.x; x++)
+        List<Vector3Int> removeList = new List<Vector3Int>();
+        List<Vector3Int> keys = new List<Vector3Int>();
+        foreach (Vector3Int discretePos in positionDictionary.Keys)
         {
-            for (int z = 0; z < gridResolution.y; z++)
+            int x = discretePos.x;
+            int z = discretePos.z;
+
+            //Clamp max
+            if (vectorfield[x, 0, z].magnitude > maxMagnitude)
             {
-                if (vectorfield[x, 0, z] == Vector3.zero)
-                    continue;
-                
-                //clamp max
-                if (vectorfield[x, 0, z].magnitude > maxMagnitude)
-                    vectorfield[x, 0, z] = vectorfield[x, 0, z].normalized * maxMagnitude;
+                vectorfield[x, 0, z] = vectorfield[x, 0, z].normalized * maxMagnitude;
+            }
 
-                vectorfield[x, 0, z] -= vectorfield[x, 0, z].normalized * ratio * Time.deltaTime;
+            Vector3 vectorToRemove = (vectorfield[x, 0, z].normalized * maxMagnitude) * ratio * Time.deltaTime;
+            Vector3 vectoreBeforeRemove = vectorfield[x, 0, z];
 
-                //clamp zero
-                if (vectorfield[x, 0, z].magnitude < 0.01f)
-                    vectorfield[x, 0, z] = Vector3.zero;
+            //Save key to update dictionary outside of foreach
+            keys.Add(discretePos);
+
+            //Crossed 0
+            if (vectorToRemove.magnitude >= vectoreBeforeRemove.magnitude)
+            {
+                vectorfield[x, 0, z] = Vector3.zero;
+                removeList.Add(discretePos);
+            }
+            else
+            {
+                vectorfield[x, 0, z] -= vectorToRemove;
             }
         }
-        RenderTo3DTexture(vectorfield);
-    }
+        //Update dictionary outside of foreach
+        foreach(Vector3Int discretePos in keys)
+        {
+            positionDictionary[discretePos] = vectorfield[discretePos.x, 0, discretePos.z];
+        }
 
+        foreach (Vector3Int vectorToRemove in removeList)
+        {
+            positionDictionary.Remove(vectorToRemove);
+        }
+        RenderTo3DTexture(vectorfield);
+
+    }
+   
     protected override Vector3[,,] GenerateVectorField()
     {
         if (vectorfield == null)
@@ -135,13 +175,10 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
             return vectorfield;
         }
 
-        Vector3[] directions = CalculateDirections();
-        Vector3Int[] discretePositions = discretizedPositions.ToArray();
-
         Vector3 middle = new Vector3(gridResolution.x * 0.5f, 0, gridResolution.y * 0.5f);
 
-        CalculateVectorfield(vectorfield, directions, discretePositions);
-        AffectSurrounding(vectorfield, directions, discretePositions);
+        AffectSurrounding(vectorfield, positionDictionary);
+        CalculateVectorfield(vectorfield, positionDictionary);
 
         return vectorfield;
     }
@@ -157,40 +194,29 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
         }
     }
 
-    private Vector3[] CalculateDirections()
+    private void AddPositionsInDictionary(List<Vector3> positions, Dictionary<Vector3Int, Vector3> dictionary)
     {
         int length = positions.Count - 1;
-        Vector3[] directions = new Vector3[length];
         for (int i = 0; i < length; i++)
         {
-            directions[i] = (positions[i + 1] - positions[i]).normalized;
-        }
-        return directions;
-    }
-
-    private void CalculateVectorfield(Vector3[,,] vectorfield, Vector3[] directions, Vector3Int[] discretePositions)
-    {
-        for (int i = 0; i < directions.Length; i++)
-        {
-            if (directions[i].y != 0)
-            {
-                directions[i] = directions[i].SetY(0);
-            }
-
-            int x = discretePositions[i].x;
-            int z = discretePositions[i].z;
-            vectorfield[x, 0, z] = directions[i];
+            Vector3 vector = (positions[i + 1] - positions[i]).normalized;
+            Vector3Int discretePosition = CalculateDiscretizedPosition(positions[i]);
+            AddInDictionary(dictionary, discretePosition, vector);
         }
     }
-
-    private void AffectSurrounding(Vector3[,,] vectorfield, Vector3[] directions, Vector3Int[] discretePositions)
+   
+    private void AffectSurrounding(Vector3[,,] vectorfield, Dictionary<Vector3Int, Vector3> dictionaryPositions)
     {
         //Pour chaque direction
-        for (int i = 0; i < directions.Length; i++)
+        List<Vector3Int> newPositions = new List<Vector3Int>();
+        List<Vector3> newVectors = new List<Vector3>();
+
+        foreach (Vector3Int discretePos in dictionaryPositions.Keys)
         {
-            int x = discretePositions[i].x;
-            int y = discretePositions[i].z;
-            Vector3 direction = directions[i];
+         
+            int x = discretePos.x;
+            int z = discretePos.z;
+            Vector3 direction = dictionaryPositions[discretePos];
 
             //calculer les surroundings 
             for (int j = -propagationSize; j <= propagationSize; j++)
@@ -201,16 +227,60 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
                         continue;
 
                     int xx = x + j;
-                    int yy = y + k;
+                    int zz = z + k;
                     //In bound
-                    if (xx >= 0 && xx < gridResolution.x && yy >= 0 && yy < gridResolution.y)
+                    if (xx >= 0 && xx < gridResolution.x && zz >= 0 && zz < gridResolution.y)
                     {
                         float diff = Mathf.Abs(j) + Mathf.Abs(k);
-                        vectorfield[xx, 0, yy] += direction * (vectorPropagationRate / diff);
+                        Vector3 vector = direction * (vectorPropagationRate / diff);
+
+                        //Add dans la liste pour pas modifié l'état du dictionary dans le foreach
+                        newPositions.Add(discretePos);
+                        newVectors.Add(vector);
                     }
                 }
             }
         }
+
+        for (int i = 0; i < newPositions.Count; i++)
+        {
+            //Add dans le dictionaire pour affecter le vectorfield plus tard
+            AddInDictionary(dictionaryPositions, newPositions[i], newVectors[i]);
+        }
     }
 
+    private void CalculateVectorfield(Vector3[,,] vectorfield, Dictionary<Vector3Int, Vector3> dictionaryPositions)
+    {
+        foreach (Vector3Int discretePos in dictionaryPositions.Keys)
+        {
+            Vector3 direction = dictionaryPositions[discretePos];
+            if (direction.y != 0)
+            {
+                direction = direction.SetY(0);
+            }
+            int x = discretePos.x;
+            int z = discretePos.z;
+
+            //Clamp max
+            if (direction.magnitude > maxMagnitude)
+            {
+                direction = direction.normalized * maxMagnitude;
+            }
+            vectorfield[x, 0, z] = direction;
+        }
+    }
+
+    void AddInDictionary(Dictionary<Vector3Int, Vector3> dict, Vector3Int discretePosition, Vector3 vector)
+    {
+        hasChanged = true;
+        if (dict.ContainsKey(discretePosition))
+        {
+            //The final value will be normalized by the decay function
+            dict[discretePosition] += vector;
+        }
+        else
+        {
+            dict.Add(discretePosition, vector);
+        }
+    }
 }

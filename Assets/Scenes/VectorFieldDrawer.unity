@@ -205,7 +205,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rotateAround: {fileID: 264229237}
-  speed: 25
+  speed: 150
   drawer: {fileID: 2025201508}
 --- !u!4 &278504496
 Transform:
@@ -507,7 +507,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 2
+      - m_Value: 1
         m_Name: Speed
         m_Overridden: 1
     m_Vector2f:
@@ -993,11 +993,11 @@ MonoBehaviour:
   scale: {x: 25, y: 0.1, z: 10}
   visualEffect: {fileID: 918062621}
   wrapMode: 1
-  gridResolution: {x: 25, y: 10}
+  gridResolution: {x: 50, y: 20}
   propagationSize: 0
-  vectorPropagationRate: 0.1
-  maxMagnitude: 0.5
-  decayFactor: 50
+  vectorPropagationRate: 0.3
+  maxMagnitude: 1
+  decayFactor: 2
   surfaceBoxCollider: {fileID: 347177239}
 --- !u!4 &2025201509
 Transform:
@@ -1030,4 +1030,3 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   drawer: {fileID: 2025201508}
-  decaySpeed: 25

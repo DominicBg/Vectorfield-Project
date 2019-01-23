@@ -120,6 +120,23 @@ public abstract class VectorFieldGeneratorBase : MonoBehaviour
         return texture;
     }
 
+    protected void AffectTexture3DWithPositionDictionary(Texture3D texture, Dictionary<Vector3Int, Vector3> positionDictionary, Vector3[,,] vectorfield)
+    {
+        Color[] colorArray = texture.GetPixels();
+        foreach (Vector3Int discretePosition in positionDictionary.Keys)
+        {
+            Vector3 vector = positionDictionary[discretePosition];
+            Color c = Vector3ToColor(vector);
+            int x = discretePosition.x;
+            int y = discretePosition.y;
+            int z = discretePosition.z;
+            int i = GetIndex(x, y, z, GetSizesVectorField(vectorfield));
+            colorArray[i] = c;  
+        }
+        texture.SetPixels(colorArray);
+        texture.Apply();
+    }
+
     Vector3Int GetSizesVectorField(Vector3[,,] vectorfield)
     {
         int sizeX = vectorfield.GetLength(0);
@@ -150,5 +167,11 @@ public abstract class VectorFieldGeneratorBase : MonoBehaviour
     int GetIndex(int x, int y, int z, Vector3Int sizes)
     {
         return x + (y * sizes.x) + (z * sizes.x * sizes.y);
+    }
+
+    public struct VectorAt3DIndex
+    {
+        public Vector3 vector;
+        public Vector3Int index;
     }
 }
