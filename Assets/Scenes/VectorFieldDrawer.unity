@@ -994,7 +994,7 @@ MonoBehaviour:
   visualEffect: {fileID: 918062621}
   wrapMode: 1
   gridResolution: {x: 50, y: 20}
-  propagationSize: 0
+  propagationSize: 1
   vectorPropagationRate: 0.3
   maxMagnitude: 1
   decayFactor: 2

@@ -14,7 +14,7 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
     //Max magnitude of each vector
     [SerializeField] float maxMagnitude = 2;
 
-    [SerializeField] float decayFactor;
+    [SerializeField] float decayFactor = 1;
 
     [Header("Insert the surface here")]
     [SerializeField] BoxCollider surfaceBoxCollider;
@@ -67,7 +67,15 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
 
     public void DrawPositions(List<Vector3> positions)
     {
-        AddPositionsInDictionary(positions, positionDictionary);
+        Dictionary<Vector3Int, Vector3> newPosDictionary = GetPositionsDictionary(positions);
+
+        if(propagationSize > 0) //dont work yet
+            AffectSurrounding(newPosDictionary, propagationSize, vectorPropagationRate);
+
+        foreach (Vector3Int discretPos in newPosDictionary.Keys)
+        {
+            AddInDictionary(positionDictionary, discretPos, newPosDictionary[discretPos]);
+        }
     }
 
     public void CalculateVectorField()
@@ -177,7 +185,8 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
 
         Vector3 middle = new Vector3(gridResolution.x * 0.5f, 0, gridResolution.y * 0.5f);
 
-        AffectSurrounding(vectorfield, positionDictionary);
+        //Broken avec le dictionary
+        //AffectSurrounding(vectorfield, positionDictionary);
         CalculateVectorfield(vectorfield, positionDictionary);
 
         return vectorfield;
@@ -194,8 +203,9 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
         }
     }
 
-    private void AddPositionsInDictionary(List<Vector3> positions, Dictionary<Vector3Int, Vector3> dictionary)
+    private Dictionary<Vector3Int, Vector3> GetPositionsDictionary(List<Vector3> positions)
     {
+        Dictionary<Vector3Int, Vector3> dictionary = new Dictionary<Vector3Int, Vector3>();
         int length = positions.Count - 1;
         for (int i = 0; i < length; i++)
         {
@@ -203,20 +213,21 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
             Vector3Int discretePosition = CalculateDiscretizedPosition(positions[i]);
             AddInDictionary(dictionary, discretePosition, vector);
         }
+        return dictionary;
     }
    
-    private void AffectSurrounding(Vector3[,,] vectorfield, Dictionary<Vector3Int, Vector3> dictionaryPositions)
+    private void AffectSurrounding(Dictionary<Vector3Int, Vector3> newPositionDictionary, int propagationSize, float vectorPropagationRate)
     {
         //Pour chaque direction
         List<Vector3Int> newPositions = new List<Vector3Int>();
         List<Vector3> newVectors = new List<Vector3>();
 
-        foreach (Vector3Int discretePos in dictionaryPositions.Keys)
+        foreach (Vector3Int discretePos in newPositionDictionary.Keys)
         {
          
             int x = discretePos.x;
             int z = discretePos.z;
-            Vector3 direction = dictionaryPositions[discretePos];
+            Vector3 direction = newPositionDictionary[discretePos];
 
             //calculer les surroundings 
             for (int j = -propagationSize; j <= propagationSize; j++)
@@ -245,7 +256,7 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
         for (int i = 0; i < newPositions.Count; i++)
         {
             //Add dans le dictionaire pour affecter le vectorfield plus tard
-            AddInDictionary(dictionaryPositions, newPositions[i], newVectors[i]);
+            AddInDictionary(newPositionDictionary, newPositions[i], newVectors[i]);
         }
     }
 
