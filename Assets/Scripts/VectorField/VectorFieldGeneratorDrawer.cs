@@ -69,7 +69,7 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
     {
         Dictionary<Vector3Int, Vector3> newPosDictionary = GetPositionsDictionary(positions);
 
-        if(propagationSize > 0) //dont work yet
+        if (propagationSize > 0)
             AffectSurrounding(newPosDictionary, propagationSize, vectorPropagationRate);
 
         foreach (Vector3Int discretPos in newPosDictionary.Keys)
@@ -221,10 +221,8 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
         //Pour chaque direction
         List<Vector3Int> newPositions = new List<Vector3Int>();
         List<Vector3> newVectors = new List<Vector3>();
-
         foreach (Vector3Int discretePos in newPositionDictionary.Keys)
-        {
-         
+        { 
             int x = discretePos.x;
             int z = discretePos.z;
             Vector3 direction = newPositionDictionary[discretePos];
@@ -246,7 +244,7 @@ public class VectorFieldGeneratorDrawer : VectorFieldGeneratorBase
                         Vector3 vector = direction * (vectorPropagationRate / diff);
 
                         //Add dans la liste pour pas modifié l'état du dictionary dans le foreach
-                        newPositions.Add(discretePos);
+                        newPositions.Add(new Vector3Int(xx,0,zz));
                         newVectors.Add(vector);
                     }
                 }

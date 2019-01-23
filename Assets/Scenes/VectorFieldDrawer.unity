@@ -993,7 +993,7 @@ MonoBehaviour:
   scale: {x: 25, y: 0.1, z: 10}
   visualEffect: {fileID: 918062621}
   wrapMode: 1
-  gridResolution: {x: 50, y: 20}
+  gridResolution: {x: 100, y: 40}
   propagationSize: 1
   vectorPropagationRate: 0.3
   maxMagnitude: 1
