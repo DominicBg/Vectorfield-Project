@@ -160,7 +160,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &264229237
 Transform:
   m_ObjectHideFlags: 0
@@ -191,7 +191,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &278504495
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -987,14 +987,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   savingName: PlaneDrawer
   debugLogs: 0
-  drawGizmos: 0
+  drawGizmos: 1
   optimizeRenderIndex: 0
   rescaleVFX: 0
   scale: {x: 25, y: 0.1, z: 10}
   visualEffect: {fileID: 918062621}
   wrapMode: 1
-  gridResolution: {x: 100, y: 40}
-  propagationSize: 1
+  gridResolution: {x: 50, y: 20}
+  propagationSize: 0
   vectorPropagationRate: 0.3
   maxMagnitude: 1
   decayFactor: 2

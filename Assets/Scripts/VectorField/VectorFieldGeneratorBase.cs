@@ -137,6 +137,31 @@ public abstract class VectorFieldGeneratorBase : MonoBehaviour
         texture.Apply();
     }
 
+    protected void InitializeVectorFieldInward(Vector3[,,] vectorfield, float inwardStrength, bool normalized = true)
+    {
+        Vector3Int size = new Vector3Int(vectorfield.GetLength(0), vectorfield.GetLength(1), vectorfield.GetLength(2));
+        for (int i = 0; i < size.x; i++)
+        {
+            for (int j = 0; j < size.y; j++)
+            {
+                for (int k = 0; k < size.z; k++)
+                {
+                    Vector3 pos = new Vector3(
+                        i - size.x * 0.5f,
+                        j - size.y * 0.5f,
+                        k - size.z * 0.5f
+                        );
+
+                    if (normalized)
+                        pos = pos.normalized;
+
+                    pos *= inwardStrength / size.magnitude; 
+                    vectorfield[i, j, k] = -pos;
+                }
+            }
+        }
+    }
+
     Vector3Int GetSizesVectorField(Vector3[,,] vectorfield)
     {
         int sizeX = vectorfield.GetLength(0);

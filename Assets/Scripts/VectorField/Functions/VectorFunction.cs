@@ -5,6 +5,8 @@ using UnityEngine.Events;
 
 public abstract class VectorFunction : MonoBehaviour
 {
+    public int size;
+
     public UnityEvent OnValueChanged = new UnityEvent();
     void OnValidate()
     {
